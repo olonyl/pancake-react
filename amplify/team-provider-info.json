@@ -1,0 +1,23 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-pancake-dev-212024-authRole",
+      "UnauthRoleArn": "arn:aws:iam::725212872730:role/amplify-pancake-dev-212024-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::725212872730:role/amplify-pancake-dev-212024-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-pancake-dev-212024-deployment",
+      "UnauthRoleName": "amplify-pancake-dev-212024-unauthRole",
+      "StackName": "amplify-pancake-dev-212024",
+      "StackId": "arn:aws:cloudformation:us-east-1:725212872730:stack/amplify-pancake-dev-212024/eca89950-d0d0-11ec-b0d0-0a06ddc8efe7",
+      "AmplifyAppId": "dpr98aa9rcrca"
+    },
+    "categories": {
+      "hosting": {
+        "amplifyhosting": {
+          "appId": "dpr98aa9rcrca",
+          "type": "manual"
+        }
+      }
+    }
+  }
+}
