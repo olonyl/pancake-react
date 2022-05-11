@@ -2,6 +2,10 @@ import Head from 'next/head'
 import styles from '../styles/Home.module.css'
 import Button from '@mui/material/Button';
 import { Formik } from 'formik';
+import Amplify from 'aws-amplify';
+import config from '../src/aws-exports';
+
+Amplify.configure(config);
 
 export default function Home() {
   return (
@@ -51,61 +55,6 @@ export default function Home() {
             </p>
           </a>
         </div>
-        <Button variant="contained">Hello World</Button>
-        <Formik
-          initialValues={{ email: '', password: '' }}
-          validate={values => {
-            const errors = {};
-            if (!values.email) {
-              errors.email = 'Required';
-            } else if (
-              !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)
-            ) {
-              errors.email = 'Invalid email address';
-            }
-            return errors;
-          }}
-          onSubmit={(values, { setSubmitting }) => {
-            setTimeout(() => {
-              alert(JSON.stringify(values, null, 2));
-              setSubmitting(false);
-            }, 400);
-          }}
-        >
-          {({
-            values,
-            errors,
-            touched,
-            handleChange,
-            handleBlur,
-            handleSubmit,
-            isSubmitting,
-            /* and other goodies */
-          }) => (
-            <form onSubmit={handleSubmit}>
-              <input
-                type="email"
-                name="email"
-                onChange={handleChange}
-                onBlur={handleBlur}
-                value={values.email}
-              />
-              {errors.email && touched.email && errors.email}
-              <input
-                type="password"
-                name="password"
-                onChange={handleChange}
-                onBlur={handleBlur}
-                value={values.password}
-              />
-              {errors.password && touched.password && errors.password}
-              <button type="submit" disabled={isSubmitting}>
-                Submit
-              </button>
-            </form>
-          )}
-        </Formik>
-
       </main>
 
       <footer className={styles.footer}>

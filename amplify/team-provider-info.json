@@ -17,6 +17,9 @@
           "appId": "dpr98aa9rcrca",
           "type": "manual"
         }
+      },
+      "auth": {
+        "pancake19bf7894": {}
       }
     }
   }
