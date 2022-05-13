@@ -1,24 +1,24 @@
-import styles from '../../styles/Home.module.css'
+import styles from '../styles/Home.module.css';
 import { API, Storage } from 'aws-amplify';
 import React, { useState, useEffect, useRef } from 'react';
-import { listNotes } from '../../src/graphql/queries';
-import { createNote as createNoteMutation, deleteNote as deleteNoteMutation } from '../../src/graphql/mutations';
-import Note from '../../components/note'
+import { listNotes } from '../src/graphql/queries';
+import { createNote as createNoteMutation, deleteNote as deleteNoteMutation } from '../src/graphql/mutations';
+import Note from '../components/note'
 import Grid from "@mui/material/Grid";
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
-import ConfirmationDialog from '../../components/confirmationDialog';
+import ConfirmationDialog from '../components/confirmationDialog';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import Amplify from 'aws-amplify';
+import config from '../src/aws-exports';
+import Layout from '../components/layout';
+import TopBar from '../components/topbar';
+import { SUCCESS, INFO, ERROR } from '../constants';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
-
-const initialFormState = { name: '', description: '' }
-const SUCCESS = "success";
-const ERROR = "error";
-const INFO = "info";
 
 const fabStyle = {
     position: 'absolute',
@@ -26,13 +26,16 @@ const fabStyle = {
     right: 16,
 };
 
+Amplify.configure(config);
+
 export default function Notes() {
     const [notes, setNotes] = useState([]);
     const [showDialog, setShowDialog] = useState(false);
-    const [openSnackbar, setOpenSnackbar] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState("");
-    const [snackbarType, setSnackbarType] = useState(INFO);
-    const [formData, setFormData] = useState(initialFormState);
+    const [snackbar, setSnackbar] = useState({
+        open: false,
+        message: "",
+        type: INFO
+    });
     const [idToDelete, setIdToDelete] = useState(null);
     const ref = useRef();
 
@@ -53,21 +56,12 @@ export default function Notes() {
         setNotes(apiData.data.listNotes.items);
     }
 
-    async function createNote() {
-        if (!formData.name || !formData.description) return;
-        await API.graphql({ query: createNoteMutation, variables: { input: formData } });
-        if (formData.image) {
-            const image = await Storage.get(formData.image);
-            formData.image = image;
-        }
-        setNotes([...notes, formData]);
-        setFormData(initialFormState);
-        ref.current.value = "";
-    }
     function displaySnackbar(type, message) {
-        setSnackbarMessage(message);
-        setSnackbarType(type);
-        setOpenSnackbar(true);
+        setSnackbar({
+            open: true,
+            message: message,
+            type: type
+        });
     }
 
     async function deleteNote(id) {
@@ -82,14 +76,6 @@ export default function Notes() {
         catch (err) {
             displaySnackbar(ERROR, "Something went wrong");
         }
-    }
-
-    async function onChange(e) {
-        if (!e.target.files[0]) return
-        const file = e.target.files[0];
-        setFormData({ ...formData, image: file.name });
-        await Storage.put(file.name, file);
-        fetchNotes();
     }
 
     function onDeleteNote(note) {
@@ -107,28 +93,12 @@ export default function Notes() {
     }
 
     function onCloseSnackbar() {
-        setOpenSnackbar(false);
+        setSnackbar({ ...snackbar, open: false });
     }
 
     return (
         <div className={styles.container}>
             <h1>My Notes App</h1>
-            <input
-                onChange={e => setFormData({ ...formData, 'name': e.target.value })}
-                placeholder="Note name"
-                value={formData.name}
-            />
-            <input
-                onChange={e => setFormData({ ...formData, 'description': e.target.value })}
-                placeholder="Note description"
-                value={formData.description}
-            />
-            <input
-                type="file"
-                onChange={onChange}
-                ref={ref}
-            />
-            <button onClick={createNote}>Create Note</button>
             <Grid container spacing={5}>
                 {
                     notes.map(note => (
@@ -142,11 +112,20 @@ export default function Notes() {
                 <AddIcon />
             </Fab>
             <ConfirmationDialog open={showDialog} onConfirm={onConfirmDelete} onCancel={onCancelDelete} title="Delete Note" />
-            <Snackbar open={openSnackbar} autoHideDuration={2000} onClose={onCloseSnackbar} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-                <Alert onClose={onCloseSnackbar} severity={snackbarType} sx={{ width: '100%' }}>
-                    {snackbarMessage}
+            <Snackbar open={snackbar.open} autoHideDuration={2000} onClose={onCloseSnackbar} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+                <Alert onClose={onCloseSnackbar} severity={snackbar.type} sx={{ width: '100%' }}>
+                    {snackbar.message}
                 </Alert>
             </Snackbar>
         </div>
+    )
+}
+
+Notes.getLayout = function getLayout(page) {
+    return (
+        <Layout>
+            <TopBar />
+            {page}
+        </Layout>
     )
 }

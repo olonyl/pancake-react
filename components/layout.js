@@ -7,7 +7,7 @@ export default function Layout({ children }) {
             <Head>
                 <title>Layouts Example</title>
             </Head>
-            <main className={styles.main}>{children}</main>
+            <main >{children}</main>
         </>
     )
 }
