@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '../../../components/layout';
 import TopBar from '../../../components/topbar';
 import Amplify, { Auth } from 'aws-amplify';
