@@ -1,0 +1,9 @@
+.file__label {
+    overflow: hidden;
+    white-space: nowrap;
+    width: 200px;
+    text-overflow: ellipsis;
+    display: inline-block;
+    margin-left: 10px;
+    vertical-align: middle;
+}

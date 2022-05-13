@@ -2,7 +2,7 @@ import styles from '../styles/Home.module.css';
 import { API, Storage } from 'aws-amplify';
 import React, { useState, useEffect, useRef } from 'react';
 import { listNotes } from '../src/graphql/queries';
-import { createNote as createNoteMutation, deleteNote as deleteNoteMutation } from '../src/graphql/mutations';
+import { deleteNote as deleteNoteMutation } from '../src/graphql/mutations';
 import Note from '../components/note'
 import Grid from "@mui/material/Grid";
 import Fab from '@mui/material/Fab';
@@ -98,11 +98,11 @@ export default function Notes() {
 
     return (
         <div className={styles.container}>
-            <h1>My Notes App</h1>
+            <h1>Pancake Notes</h1>
             <Grid container spacing={5}>
                 {
                     notes.map(note => (
-                        <Grid item md={4}>
+                        <Grid item md={4} key={note.id}>
                             <Note note={note} onDelete={() => onDeleteNote(note)} />
                         </Grid>
                     ))

@@ -31,10 +31,11 @@ export default function ComplexGrid(props) {
             sx={{
                 p: 2,
                 margin: "auto",
-                maxWidth: 400,
+                maxWidth: 500,
                 flexGrow: 1,
                 backgroundColor: (theme) =>
                     theme.palette.mode === "dark" ? "#1A2027" : "#fff"
+
             }}
         >
             <Grid container spacing={2}>
@@ -55,7 +56,7 @@ export default function ComplexGrid(props) {
                         </Grid>
                         <Grid container justifyContent="center" >
                             <Grid item>
-                                <Button >Edit</Button>
+                                <Button href={`/notes/${note.id}`}>View</Button>
                             </Grid>
                             <Grid item>
                                 <Button color="error" onClick={() => onDelete()}>Remove</Button>

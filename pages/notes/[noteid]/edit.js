@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Layout from '../../components/layout'
-import TopBar from '../../components/topbar'
+import Layout from '../../../components/layout';
+import TopBar from '../../../components/topbar';
 import Amplify, { Auth } from 'aws-amplify';
-import config from '../../src/aws-exports';
+import config from '../../../src/aws-exports';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
@@ -14,16 +14,26 @@ import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
-import AddIcon from '@mui/icons-material/Add';
-import { API, Storage } from 'aws-amplify';
-import { createNote as createNoteMutation } from '../../src/graphql/mutations';
-import styles from './create.module.css';
-import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
-import { SUCCESS, INFO, ERROR } from '../../constants';
-import Router from 'next/router';
+import { useRouter } from 'next/router'
+import { getNote } from '../../../src/graphql/queries';
+import { API, Storage } from 'aws-amplify';
+import HideImageIcon from '@mui/icons-material/HideImage';
+import Snackbar from '@mui/material/Snackbar';
+import { SUCCESS, INFO, ERROR } from '../../../constants';
+import AddIcon from '@mui/icons-material/Add';
+import styles from './edit.module.css';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
+import { updateNote as updateNoteMutation } from '../../../src/graphql/mutations';
+import Router from 'next/router';
+
+const Img = styled("img")({
+    margin: "auto",
+    display: "block",
+    maxWidth: "100%",
+    maxHeight: "100%"
+});
 
 const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -48,12 +58,15 @@ const SignupSchema = Yup.object().shape({
         .required('Required')
 });
 
+
 Amplify.configure(config);
 
-export default function Create() {
-    const [image, setImage] = useState(null);
-    const [userId, setUserId] = useState(null);
+export default function Edit() {
+    const [note, setNote] = useState({ name: '', description: '' });
+    const router = useRouter()
+    const { noteid } = router.query;
     const [loading, setLoading] = useState(false);
+    const [userId, setUserId] = useState(null);
 
     const [snackbar, setSnackbar] = useState({
         open: false,
@@ -61,30 +74,33 @@ export default function Create() {
         type: INFO
     });
 
+    useEffect(() => {
+        if (!noteid) return;
+        fetchNote(noteid);
+    }, [noteid]);
 
-    async function createNote(note) {
-        try {
-            if (!note.name || !note.description) return;
-            setLoading(true);
-            await API.graphql({ query: createNoteMutation, variables: { input: { ...note, image, userId } } });
-            displaySnackbar(SUCCESS, "Note Created!");
-            Router.push('/notes');
-        }
-        catch (err) {
-            displaySnackbar(ERROR, "Something went wrong!")
-            setLoading(false);
+    useEffect(() => {
+        Auth.currentUserInfo()
+            .then(data => setUserId(data.id))
+            .catch(err => console.log(err));
+    }, []);
+
+    async function fetchNote(noteId) {
+        const apiData = await API.graphql({ query: getNote, variables: { id: noteId } });
+        var note = apiData.data.getNote;
+
+        if (note.image) {
+            const image = await Storage.get(note.image);
+            setNote({ ...note, imageURL: image });
         }
     }
 
-    async function onFileChange(e) {
-        const imageFile = e.target.files[0];
-
-        if (!imageFile) return;
-        if (!imageFile.name.match(/\.(jpg|jpeg|png|gif)$/)) return;
-
-        const file = e.target.files[0];
-        setImage(file.name);
-        await Storage.put(file.name, file);
+    function renderImage() {
+        if (note.imageURL) {
+            return <Img alt="complex" src={note.imageURL} width='150px' sx={{ marginTop: 2 }} />
+        } else {
+            return <HideImageIcon sx={{ display: { xs: 'none', md: 'flex', color: 'grey', fontSize: '50px', margin: 'auto' } }} />
+        }
     }
 
     function onCloseSnackbar() {
@@ -99,20 +115,48 @@ export default function Create() {
         });
     }
 
-    useEffect(() => {
-        Auth.currentUserInfo()
-            .then(data => setUserId(data.id))
-            .catch(err => console.log(err));
-    }, []);
+    async function saveChanges(modifiedNote) {
+        try {
+            var { id, image } = note;
+
+            console.log({ id, ...modifiedNote, userId, image })
+
+            if (!note.name || !note.description) return;
+            setLoading(true);
+            await API.graphql({ query: updateNoteMutation, variables: { input: { id, ...modifiedNote, userId, image } } });
+            displaySnackbar(SUCCESS, "Note Updated!");
+            Router.push('/notes');
+        }
+        catch (err) {
+            console.log(err);
+            displaySnackbar(ERROR, "Something went wrong!")
+            setLoading(false);
+        }
+    }
+
+    async function onFileChange(e) {
+        const imageFile = e.target.files[0];
+
+        if (!imageFile) return;
+        if (!imageFile.name.match(/\.(jpg|jpeg|png|gif)$/)) return;
+
+        const file = e.target.files[0];
+        setNote({ ...note, image: file.name });
+        await Storage.put(file.name, file);
+    }
 
     return (
+
         <React.Fragment>
             <Formik
-                initialValues={{ name: '', description: '' }}
+                initialValues={{ name: note.name, description: note.description }}
                 validationSchema={SignupSchema}
-                onSubmit={values => createNote(values)}
+                enableReinitialize
+                onSubmit={values => saveChanges(values)}
             >
+
                 {({ errors, touched, validateField, validateForm }) => (
+
                     <Form>
                         <Card sx={{
                             p: 2,
@@ -123,7 +167,7 @@ export default function Create() {
                         }}>
                             <CardContent>
                                 <Typography component="div" variant="h5" marginBottom={4}>
-                                    Create a new Note
+                                    {note.description}
                                 </Typography>
 
                                 <Grid container spacing={4} justifyContent="flex-start" alignItems="center">
@@ -160,7 +204,7 @@ export default function Create() {
                                                 <AddIcon /> Upload a file
                                                 <input type="file" hidden onChange={onFileChange} accept="image/*" />
                                             </Button>
-                                            <div className={styles.file__label}>{image}</div>
+                                            <div className={styles.file__label}>{note.image}</div>
                                         </Grid>
                                     </Grid>
 
@@ -172,7 +216,7 @@ export default function Create() {
                                         <Button href='/notes'>Go to Notes</Button>
                                     </Grid>
                                     <Grid item>
-                                        <Button color="success" variant='contained' type="submit" disabled={loading}>Create</Button>
+                                        <Button color="success" variant='contained' type="submit" disabled={loading}>Save Changes</Button>
                                     </Grid>
                                 </Grid>
                             </CardActions>
@@ -185,11 +229,11 @@ export default function Create() {
                     {snackbar.message}
                 </Alert>
             </Snackbar>
-        </React.Fragment>
+        </React.Fragment >
     )
 }
 
-Create.getLayout = function getLayout(page) {
+Edit.getLayout = function getLayout(page) {
     return (
         <Layout>
             <TopBar />

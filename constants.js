@@ -1,3 +1,3 @@
-const SUCCESS = "success";
-const ERROR = "error";
-const INFO = "info";
+export const SUCCESS = "success";
+export const ERROR = "error";
+export const INFO = "info";

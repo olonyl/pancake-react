@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -13,17 +13,31 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import { Auth } from "aws-amplify";
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import Router from 'next/router';
 
-const pages = ['Home'];
+const pages = [{
+    title: 'Notes',
+    action: () => { Router.push('/notes'); }
+}];
+
 const settings = [
     {
         title: 'Logout',
-        action: () => { Auth.signOut(); window.location.reload(); }
+        action: () => {
+
+            Auth.signOut().then(() => {
+                Router.push('/').then(() => { window.location.reload(); });
+            });
+
+
+        }
     }];
 
 const ResponsiveAppBar = () => {
     const [anchorElNav, setAnchorElNav] = React.useState(null);
     const [anchorElUser, setAnchorElUser] = React.useState(null);
+    const [username, setUsername] = useState('');
 
     const handleOpenNavMenu = (event) => {
         setAnchorElNav(event.currentTarget);
@@ -39,6 +53,12 @@ const ResponsiveAppBar = () => {
     const handleCloseUserMenu = () => {
         setAnchorElUser(null);
     };
+
+    useEffect(() => {
+        Auth.currentUserInfo()
+            .then(data => setUsername(data.username))
+            .catch(err => console.log(err));
+    }, []);
 
     return (
         <AppBar position="static">
@@ -93,8 +113,8 @@ const ResponsiveAppBar = () => {
                             }}
                         >
                             {pages.map((page) => (
-                                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                                    <Typography textAlign="center">{page}</Typography>
+                                <MenuItem key={page.title} onClick={page.action}>
+                                    <Typography textAlign="center">{page.title}</Typography>
                                 </MenuItem>
                             ))}
                         </Menu>
@@ -121,19 +141,21 @@ const ResponsiveAppBar = () => {
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
                         {pages.map((page) => (
                             <Button
-                                key={page}
-                                onClick={handleCloseNavMenu}
-                                sx={{ my: 2, color: 'white', display: 'block' }}
-                            >
-                                {page}
+                                key={page.title}
+                                onClick={page.action}
+                                sx={{ my: 2, color: 'white', display: 'block' }}>
+                                {page.title}
                             </Button>
                         ))}
                     </Box>
-
+                    <Typography textAlign="center" marginRight={2}>{username}</Typography>
                     <Box sx={{ flexGrow: 0 }}>
+
                         <Tooltip title="Open settings">
                             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                                <Avatar  >
+                                    <AccountCircleIcon sx={{ display: { fontSize: '50px' } }} />
+                                </Avatar>
                             </IconButton>
                         </Tooltip>
                         <Menu
