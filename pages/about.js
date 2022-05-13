@@ -7,16 +7,15 @@ import Layout from '../components/layout'
 import TopBar from '../components/topbar'
 import Notes from './notes'
 
-Amplify.configure(config);
 const initialFormState = { name: '', description: '' }
 
-export default function Home() {
+export default function About() {
     return (
-        <Notes />
+        <h1>This is the About Page</h1>
     )
 }
 
-Home.getLayout = function getLayout(page) {
+About.getLayout = function getLayout(page) {
     return (
         <Layout>
             <TopBar />
