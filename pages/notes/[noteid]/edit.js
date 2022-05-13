@@ -167,7 +167,7 @@ export default function Edit() {
                         }}>
                             <CardContent>
                                 <Typography component="div" variant="h5" marginBottom={4}>
-                                    {note.description}
+                                    Edit Note
                                 </Typography>
 
                                 <Grid container spacing={4} justifyContent="flex-start" alignItems="center">
