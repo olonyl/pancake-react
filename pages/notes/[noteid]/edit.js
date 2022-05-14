@@ -89,6 +89,7 @@ export default function Edit() {
         const apiData = await API.graphql({ query: getNote, variables: { id: noteId } });
         var note = apiData.data.getNote;
 
+        setNote({ ...note });
         if (note.image) {
             const image = await Storage.get(note.image);
             setNote({ ...note, imageURL: image });
