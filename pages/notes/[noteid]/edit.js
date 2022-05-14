@@ -95,14 +95,6 @@ export default function Edit() {
         }
     }
 
-    function renderImage() {
-        if (note.imageURL) {
-            return <Img alt="complex" src={note.imageURL} width='150px' sx={{ marginTop: 2 }} />
-        } else {
-            return <HideImageIcon sx={{ display: { xs: 'none', md: 'flex', color: 'grey', fontSize: '50px', margin: 'auto' } }} />
-        }
-    }
-
     function onCloseSnackbar() {
         setSnackbar({ ...snackbar, open: false });
     }
@@ -118,8 +110,6 @@ export default function Edit() {
     async function saveChanges(modifiedNote) {
         try {
             var { id, image } = note;
-
-            console.log({ id, ...modifiedNote, userId, image })
 
             if (!note.name || !note.description) return;
             setLoading(true);

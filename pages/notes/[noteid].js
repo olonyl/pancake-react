@@ -56,17 +56,19 @@ export default function View() {
         const apiData = await API.graphql({ query: getNote, variables: { id: noteId } });
         var note = apiData.data.getNote;
 
+        setNote({ ...note });
         if (note.image) {
             const image = await Storage.get(note.image);
             setNote({ ...note, imageURL: image });
         }
+
     }
 
     function renderImage() {
         if (note.imageURL) {
             return <Img alt="complex" src={note.imageURL} width='150px' sx={{ marginTop: 2 }} />
         } else {
-            return <HideImageIcon sx={{ display: { xs: 'none', md: 'flex', color: 'grey', fontSize: '50px', margin: 'auto' } }} />
+            return <HideImageIcon sx={{ display: { color: 'grey', fontSize: '50px', margin: 'auto', marginTop: 10 } }} />
         }
     }
     return (

@@ -22,7 +22,7 @@ export default function ComplexGrid(props) {
         if (note.image) {
             return <Img alt="complex" src={note.image} />
         } else {
-            return <InsertPhotoOutlinedIcon sx={{ display: { xs: 'none', md: 'flex', color: 'grey', fontSize: '50px' } }} />
+            return <InsertPhotoOutlinedIcon sx={{ display: { color: 'grey', fontSize: '50px' } }} />
         }
     }
 
